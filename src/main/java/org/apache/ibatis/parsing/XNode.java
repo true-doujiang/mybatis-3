@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import lombok.extern.slf4j.Slf4j;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -29,6 +30,7 @@ import org.w3c.dom.NodeList;
 /**
  * @author Clinton Begin
  */
+@Slf4j
 public class XNode {
 
   private final Node node;
@@ -43,6 +45,7 @@ public class XNode {
     this.node = node;
     this.name = node.getNodeName();
     this.variables = variables;
+    //  解析 ${xxx}
     this.attributes = parseAttributes(node);
     this.body = parseBody(node);
   }
@@ -301,11 +304,15 @@ public class XNode {
     return children;
   }
 
+  /**
+   *
+   */
   public Properties getChildrenAsProperties() {
     Properties properties = new Properties();
     for (XNode child : getChildren()) {
       String name = child.getStringAttribute("name");
       String value = child.getStringAttribute("value");
+//      log.debug("XNode getChildrenAsProperties name: {}, value: {}", name, value);
       if (name != null && value != null) {
         properties.setProperty(name, value);
       }
@@ -347,13 +354,20 @@ public class XNode {
     return builder.toString();
   }
 
+  /**
+   *  解析 ${xxx}
+   */
   private Properties parseAttributes(Node n) {
     Properties attributes = new Properties();
     NamedNodeMap attributeNodes = n.getAttributes();
     if (attributeNodes != null) {
       for (int i = 0; i < attributeNodes.getLength(); i++) {
         Node attribute = attributeNodes.item(i);
-        String value = PropertyParser.parse(attribute.getNodeValue(), variables);
+        String attributeNodeValue = attribute.getNodeValue();
+        // 解析 ${xxx}
+        String value = PropertyParser.parse(attributeNodeValue, variables);
+
+        //log.debug("attributeNodeValue: {}, value: {}", attributeNodeValue, value);
         attributes.put(attribute.getNodeName(), value);
       }
     }

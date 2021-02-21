@@ -93,11 +93,14 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
  * @author Clinton Begin
+ * 全局配置文件映射
  */
 public class Configuration {
 
+  // 数据库地址、事务处理器 等信息
   protected Environment environment;
 
+  // <settings> 配置的全局属性   自带默认值
   protected boolean safeRowBoundsEnabled;
   protected boolean safeResultHandlerEnabled = true;
   protected boolean mapUnderscoreToCamelCase;
@@ -113,11 +116,15 @@ public class Configuration {
   protected String logPrefix;
   protected Class <? extends Log> logImpl;
   protected Class <? extends VFS> vfsImpl;
+
+  // 一级缓存级别
   protected LocalCacheScope localCacheScope = LocalCacheScope.SESSION;
   protected JdbcType jdbcTypeForNull = JdbcType.OTHER;
   protected Set<String> lazyLoadTriggerMethods = new HashSet<String>(Arrays.asList(new String[] { "equals", "clone", "hashCode", "toString" }));
   protected Integer defaultStatementTimeout;
   protected Integer defaultFetchSize;
+
+  // 默认 simple Executor
   protected ExecutorType defaultExecutorType = ExecutorType.SIMPLE;
   protected AutoMappingBehavior autoMappingBehavior = AutoMappingBehavior.PARTIAL;
   protected AutoMappingUnknownColumnBehavior autoMappingUnknownColumnBehavior = AutoMappingUnknownColumnBehavior.NONE;
@@ -128,6 +135,8 @@ public class Configuration {
   protected ObjectWrapperFactory objectWrapperFactory = new DefaultObjectWrapperFactory();
 
   protected boolean lazyLoadingEnabled = false;
+
+  // cglib | javassist   创建具有延迟加载能力对象所使用的代理工具
   protected ProxyFactory proxyFactory = new JavassistProxyFactory(); // #224 Using internal Javassist instead of OGNL
 
   protected String databaseId;
@@ -139,18 +148,27 @@ public class Configuration {
    */
   protected Class<?> configurationFactory;
 
+  /**
+   * mapper注册器  底层是个HashMap
+   */
   protected final MapperRegistry mapperRegistry = new MapperRegistry(this);
+  // 拦截器链
   protected final InterceptorChain interceptorChain = new InterceptorChain();
+  // 类型映射器
   protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry();
+  // 别名注册器   底层是个HashMap
   protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
   protected final LanguageDriverRegistry languageRegistry = new LanguageDriverRegistry();
-
+  /**
+   * StrictMap 内部类
+   */
   protected final Map<String, MappedStatement> mappedStatements = new StrictMap<MappedStatement>("Mapped Statements collection");
   protected final Map<String, Cache> caches = new StrictMap<Cache>("Caches collection");
   protected final Map<String, ResultMap> resultMaps = new StrictMap<ResultMap>("Result Maps collection");
   protected final Map<String, ParameterMap> parameterMaps = new StrictMap<ParameterMap>("Parameter Maps collection");
   protected final Map<String, KeyGenerator> keyGenerators = new StrictMap<KeyGenerator>("Key Generators collection");
 
+  // 存放已经解析的mapper.xml的路径 和 interface org.apache.ibatis.binding.BoundBlogMapper
   protected final Set<String> loadedResources = new HashSet<String>();
   protected final Map<String, XNode> sqlFragments = new StrictMap<XNode>("XML fragments parsed from previous mappers");
 
@@ -166,15 +184,23 @@ public class Configuration {
    */
   protected final Map<String, String> cacheRefMap = new HashMap<String, String>();
 
+  /**
+   * 构造器1
+   */
   public Configuration(Environment environment) {
     this();
     this.environment = environment;
   }
 
+  /**
+   * 构造器2
+   */
   public Configuration() {
+    // 事务处理 工厂    全局配置文件中 environment标签中引用
     typeAliasRegistry.registerAlias("JDBC", JdbcTransactionFactory.class);
     typeAliasRegistry.registerAlias("MANAGED", ManagedTransactionFactory.class);
 
+    // dataSource 工厂   全局配置文件中 environment标签中引用
     typeAliasRegistry.registerAlias("JNDI", JndiDataSourceFactory.class);
     typeAliasRegistry.registerAlias("POOLED", PooledDataSourceFactory.class);
     typeAliasRegistry.registerAlias("UNPOOLED", UnpooledDataSourceFactory.class);
@@ -541,12 +567,22 @@ public class Configuration {
     return MetaObject.forObject(object, objectFactory, objectWrapperFactory, reflectorFactory);
   }
 
+  /**
+   * BaseStatementHandler 构造器中调用
+   */
   public ParameterHandler newParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
-    ParameterHandler parameterHandler = mappedStatement.getLang().createParameterHandler(mappedStatement, parameterObject, boundSql);
+    LanguageDriver lang = mappedStatement.getLang();
+    ParameterHandler parameterHandler = lang.createParameterHandler(mappedStatement, parameterObject, boundSql);
+
+    // 绑定拦截器
     parameterHandler = (ParameterHandler) interceptorChain.pluginAll(parameterHandler);
+
     return parameterHandler;
   }
 
+  /**
+   * BaseStatementHandler 构造器中调用
+   */
   public ResultSetHandler newResultSetHandler(Executor executor, MappedStatement mappedStatement, RowBounds rowBounds, ParameterHandler parameterHandler,
       ResultHandler resultHandler, BoundSql boundSql) {
     ResultSetHandler resultSetHandler = new DefaultResultSetHandler(executor, mappedStatement, parameterHandler, resultHandler, boundSql, rowBounds);
@@ -554,6 +590,9 @@ public class Configuration {
     return resultSetHandler;
   }
 
+  /**
+   * 创建 StatementHandler
+   */
   public StatementHandler newStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
     StatementHandler statementHandler = new RoutingStatementHandler(executor, mappedStatement, parameterObject, rowBounds, resultHandler, boundSql);
     statementHandler = (StatementHandler) interceptorChain.pluginAll(statementHandler);
@@ -564,6 +603,11 @@ public class Configuration {
     return newExecutor(transaction, defaultExecutorType);
   }
 
+  /**
+   * 创建Executor 并绑定拦截器
+   *
+   * DefaultSqlSessionFactory.openSessionFromDataSource()调用
+   */
   public Executor newExecutor(Transaction transaction, ExecutorType executorType) {
     executorType = executorType == null ? defaultExecutorType : executorType;
     executorType = executorType == null ? ExecutorType.SIMPLE : executorType;

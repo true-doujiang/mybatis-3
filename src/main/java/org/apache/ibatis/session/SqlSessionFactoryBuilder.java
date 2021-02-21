@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.util.Properties;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.builder.xml.XMLConfigBuilder;
 import org.apache.ibatis.exceptions.ExceptionFactory;
 import org.apache.ibatis.executor.ErrorContext;
@@ -30,6 +31,7 @@ import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
  *
  * @author Clinton Begin
  */
+@Slf4j
 public class SqlSessionFactoryBuilder {
 
   public SqlSessionFactory build(Reader reader) {
@@ -60,6 +62,10 @@ public class SqlSessionFactoryBuilder {
     }
   }
 
+
+  /**
+   * 用户代码调用，并传入全局配置文件stream
+   */
   public SqlSessionFactory build(InputStream inputStream) {
     return build(inputStream, null, null);
   }
@@ -74,8 +80,17 @@ public class SqlSessionFactoryBuilder {
 
   public SqlSessionFactory build(InputStream inputStream, String environment, Properties properties) {
     try {
-      XMLConfigBuilder parser = new XMLConfigBuilder(inputStream, environment, properties);
-      return build(parser.parse());
+      // XMLConfigBuilder extends BaseBuilder{configuration}
+      XMLConfigBuilder xmlConfigBuilder = new XMLConfigBuilder(inputStream, environment, properties);
+      log.debug("build SqlSessionFactory xmlConfigBuilder: {}", xmlConfigBuilder);
+
+      // 解析mybatis全局配置文件、 初始换框架的  typeHandler、interceptor、mapper代理..... 默认参数啊
+      Configuration config = xmlConfigBuilder.parse();
+
+      // 创建 DefaultSqlSessionFactory
+      // return build(config);
+
+      return new DefaultSqlSessionFactory(config);
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error building SqlSession.", e);
     } finally {

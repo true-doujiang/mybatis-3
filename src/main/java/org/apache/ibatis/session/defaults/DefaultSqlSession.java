@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.binding.BindingException;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.exceptions.ExceptionFactory;
@@ -46,15 +47,24 @@ import org.apache.ibatis.session.SqlSession;
  *
  * @author Clinton Begin
  */
+@Slf4j
 public class DefaultSqlSession implements SqlSession {
 
   private final Configuration configuration;
+
+  // 默认肯定是 CachingExecutor  门面设计模式
+  // SqlSession sqlSession = sqlSessionFactory.openSession();  创建 Executor
   private final Executor executor;
 
   private final boolean autoCommit;
   private boolean dirty;
   private List<Cursor<?>> cursorList;
 
+
+  /**
+   * 构造器
+   * DefaultSqlSessionFactory.openSessionFromDataSource()调用
+   */
   public DefaultSqlSession(Configuration configuration, Executor executor, boolean autoCommit) {
     this.configuration = configuration;
     this.executor = executor;
@@ -62,15 +72,19 @@ public class DefaultSqlSession implements SqlSession {
     this.autoCommit = autoCommit;
   }
 
-  public DefaultSqlSession(Configuration configuration, Executor executor) {
-    this(configuration, executor, false);
-  }
+//  public DefaultSqlSession(Configuration configuration, Executor executor) {
+//    this(configuration, executor, false);
+//  }
+
 
   @Override
   public <T> T selectOne(String statement) {
     return this.<T>selectOne(statement, null);
   }
 
+  /**
+   * MapperMethod的execute方法调用
+   */
   @Override
   public <T> T selectOne(String statement, Object parameter) {
     // Popular vote was to return null on 0 results and throw exception on too many.
@@ -144,8 +158,17 @@ public class DefaultSqlSession implements SqlSession {
   @Override
   public <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds) {
     try {
+      // 底层通过 configuration的mappedStatements获取
       MappedStatement ms = configuration.getMappedStatement(statement);
-      return executor.query(ms, wrapCollection(parameter), rowBounds, Executor.NO_RESULT_HANDLER);
+      log.debug("DefaultSqlSession selectList statement: {}, ms: {}", statement, ms);
+
+      //return executor.query(ms, wrapCollection(parameter), rowBounds, Executor.NO_RESULT_HANDLER);
+
+      // list、数组类型参数转换
+      Object o = wrapCollection(parameter);
+      // 执行器开始闪亮登场
+      List<E> result = executor.query(ms, o, rowBounds, Executor.NO_RESULT_HANDLER);
+      return result;
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error querying database.  Cause: " + e, e);
     } finally {
@@ -287,9 +310,13 @@ public class DefaultSqlSession implements SqlSession {
     return configuration;
   }
 
-  @Override
+  /**
+   * 用户代码中调用我  生成mapper代理类
+   */
   public <T> T getMapper(Class<T> type) {
-    return configuration.<T>getMapper(type, this);
+    // 底层通过mapper注册器 把this传进去
+    //return configuration.<T>getMapper(type, this);
+    return configuration.getMapper(type, this);
   }
 
   @Override
@@ -333,6 +360,9 @@ public class DefaultSqlSession implements SqlSession {
     return object;
   }
 
+  /**
+   * 内部类
+   */
   public static class StrictMap<V> extends HashMap<String, V> {
 
     private static final long serialVersionUID = -5741767162221585340L;
