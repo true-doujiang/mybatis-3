@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2017 the original author or authors.
+ *    Copyright 2009-2021 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -13,14 +13,14 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.apache.ibatis.submitted.usesjava8.multiple_resultsets;
+package com.yhh.example.demo.entity;
 
-import java.util.List;
-
-public interface Mapper {
-
-  List<List<?>> getUsersAndGroups();
-
-  List<List<?>> multiResultsWithUpdate();
-
+/**
+ * @Author: -小野猪-
+ * @Date: 2019/6/30 10:35
+ * @Version: 1.0
+ * @Desc: 用户的扩展类
+ */
+public class UserCustom extends User {
+	//可以扩展用户的信息
 }
