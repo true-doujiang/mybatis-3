@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2016 the original author or authors.
+ *    Copyright 2009-2021 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -13,26 +13,25 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package org.apache.ibatis.submitted.usesjava8.default_method;
+package com.yhh.example.demo.entity;
 
-public class User {
 
-  private Integer id;
-  private String name;
 
-  public Integer getId() {
-    return id;
-  }
+/**
+ * @Author: -小野猪-
+ * @Date: 2019/6/30 10:35
+ * @Version: 1.0
+ * @Desc: 在这里包装所需要的查询条件
+ */
+public class UserQueryVo {
 
-  public void setId(Integer id) {
-    this.id = id;
-  }
+	
+	//用户查询条件(根据需要也可以是User)
+	private UserCustom userCustom;
 
-  public String getName() {
-    return name;
-  }
 
-  public void setName(String name) {
-    this.name = name;
-  }
+	
+	//可以包装其它的查询条件，订单、商品
+	//....
+	
 }

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+       Copyright 2009-2021 the original author or authors.
+
+       Licensed under the Apache License, Version 2.0 (the "License");
+       you may not use this file except in compliance with the License.
+       You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+       Unless required by applicable law or agreed to in writing, software
+       distributed under the License is distributed on an "AS IS" BASIS,
+       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+       See the License for the specific language governing permissions and
+       limitations under the License.
+
+-->
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+    <!-- 加载属性文件 resource/url -->
+    <properties resource="db.properties">
+        <!--properties中还可以配置一些属性名和属性值(建议：不要在这里配)  -->
+        <!-- <property name="jdbc.driver" value=""/> -->
+    </properties>
+
+    <!-- 别名定义 -->
+    <typeAliases>
+        <!--1.针对单个 别名定义
+        <typeAlias type="com.yhh.mybatis.entity" alias="user"/>-->
+
+        <!-- 2.批量 别名定义
+              指定包名，mybatis自动扫描包中的po类，自动定义别名，别名就是类名（首字母大写或小写都可以）-->
+        <package name="com.yhh.example.demo.entity"/>
+    </typeAliases>
+
+    <!--
+        mybatis中通过typeHandlers完成jdbc类型和java类型的转换。
+         通常情况下，mybatis提供的类型处理器满足日常需要，不需要自定义.
+        <typeHandlers>
+        </typeHandlers>
+     -->
+
+    <!--
+    <plugins>
+        <plugin interceptor="">
+            <property name="" value=""/>
+        </plugin>
+        <plugin interceptor=""></plugin>
+        <plugin interceptor=""></plugin>
+    </plugins>
+    -->
+
+    <!--
+    <objectFactory type="">
+        <property name="" value=""/>
+    </objectFactory>
+    -->
+
+    <!--
+   <objectWrapperFactory type="">
+       <property name="" value=""/>
+   </objectWrapperFactory>
+   -->
+
+    <!--
+       settings全局参数配置  用到的时候再配置，慎重使用
+       mybatis框架在运行时可以调整一些运行参数。 比如：开启二级缓存、开启延迟加载。。
+       -->
+    <!--
+    <settings>
+        <setting name="cacheEnabled" value="true"/>
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <setting name="multipleResultSetsEnabled" value="true"/>
+        <setting name="useColumnLabel" value="true"/>
+        <setting name="useGeneratedKeys" value="false"/>
+        <setting name="autoMappingBehavior" value="PARTIAL"/>
+        <setting name="autoMappingUnknownColumnBehavior" value="WARNING"/>
+        <setting name="defaultExecutorType" value="SIMPLE"/>
+        <setting name="defaultStatementTimeout" value="30"/>
+        <setting name="defaultFetchSize" value="200"/>
+        <setting name="safeRowBoundsEnabled" value="false"/>
+        <setting name="mapUnderscoreToCamelCase" value="false"/>
+        <setting name="localCacheScope" value="SESSION"/>
+        <setting name="jdbcTypeForNull" value="OTHER"/>
+        <setting name="lazyLoadTriggerMethods" value="equals,clone,hashCode,toString"/>
+    </settings>
+    -->
+
+    <!-- typeAliasRegistry中 默认注册了  JDBC, POOLED ....等别名 -->
+    <environments default="development">
+       <environment id="development">
+           <!-- JDBC / POOLED  都是在 Configuration类中定义的 typeAliasRegistry   -->
+<!--           <transactionManager type="JDBC" />-->
+           <transactionManager type="JDBC" >
+               <property name="closeConnection" value="false"/>
+           </transactionManager>
+           <dataSource type="POOLED">
+               <property name="driver" value="${jdbc.driver}" />
+               <property name="url" value="${jdbc.url}" />
+               <property name="username" value="${jdbc.username}" />
+               <property name="password" value="${jdbc.password}" />
+           </dataSource>
+       </environment>
+   </environments>
+
+
+    <!--
+        <databaseIdProvider type="">
+            <property name="" value=""/>
+        </databaseIdProvider>
+    -->
+
+
+    <!--
+    <typeHandlers>
+        <typeHandler handler="" javaType="" jdbcType=""/>
+        <package name=""/>
+    </typeHandlers>
+     -->
+    
+    <!-- 加载 映射文件 3种方式-->
+    <mappers>
+        <!-- 1、通过resource方法一次加载一个映射文件 -->
+        <mapper resource="com/yhh/example/demo/mapper/UserMapper.xml"/>
+
+        <!-- 2、通过mapper接口  加载单个映射文件
+              遵循一些规范：
+              ①需要将mapper接口类名和mapper.xml映射文件名称保持一致，且在一个目录
+              ②使用的是mapper代理方法（这个肯定是啊） -->
+<!--        <mapper class="com.yhh.example.demo.mapper.UserMapper"/>-->
+
+        <!-- url也可以       -->
+        <!-- <mapper url="" />-->
+
+        <!-- 3、指定mapper接口的包名  批量加载mapper  遵循一些规范：同第二种。 -->
+<!--        <package name="com.yhh.example.demo.mapper" />-->
+
+    </mappers>
+
+</configuration>
