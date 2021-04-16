@@ -32,15 +32,25 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
  * @author Clinton Begin
  */
 public abstract class BaseBuilder {
+
   protected final Configuration configuration;
+
+  // 2个也是从configuration取出来的，直接使用configuration不就行了嘛 多此一举
   protected final TypeAliasRegistry typeAliasRegistry;
   protected final TypeHandlerRegistry typeHandlerRegistry;
 
+
+  /**
+   * default constructor
+   */
   public BaseBuilder(Configuration configuration) {
     this.configuration = configuration;
+    // 多此一举
     this.typeAliasRegistry = this.configuration.getTypeAliasRegistry();
     this.typeHandlerRegistry = this.configuration.getTypeHandlerRegistry();
   }
+
+
 
   public Configuration getConfiguration() {
     return configuration;
@@ -119,6 +129,12 @@ public abstract class BaseBuilder {
     }
   }
 
+
+  protected Class<?> resolveAlias(String alias) {
+    return typeAliasRegistry.resolveAlias(alias);
+  }
+
+
   protected TypeHandler<?> resolveTypeHandler(Class<?> javaType, String typeHandlerAlias) {
     if (typeHandlerAlias == null) {
       return null;
@@ -145,7 +161,4 @@ public abstract class BaseBuilder {
     return handler;
   }
 
-  protected Class<?> resolveAlias(String alias) {
-    return typeAliasRegistry.resolveAlias(alias);
-  }
 }

@@ -63,6 +63,10 @@ public final class TypeHandlerRegistry {
 
   private Class<? extends TypeHandler> defaultEnumTypeHandler = EnumTypeHandler.class;
 
+
+  /**
+   * 构造器
+   */
   public TypeHandlerRegistry() {
     register(Boolean.class, new BooleanTypeHandler());
     register(boolean.class, new BooleanTypeHandler());

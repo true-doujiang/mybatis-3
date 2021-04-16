@@ -62,10 +62,17 @@ public abstract class BaseExecutor implements Executor {
   protected int queryStack;
   private boolean closed;
 
+  /**
+   * default constructor
+   */
   protected BaseExecutor(Configuration configuration, Transaction transaction) {
+    //
     this.transaction = transaction;
+    //
     this.deferredLoads = new ConcurrentLinkedQueue<DeferredLoad>();
+    //
     this.localCache = new PerpetualCache("LocalCache");
+
     this.localOutputParameterCache = new PerpetualCache("LocalOutputParameterCache");
     this.closed = false;
     this.configuration = configuration;
@@ -267,17 +274,14 @@ public abstract class BaseExecutor implements Executor {
     }
   }
 
-  protected abstract int doUpdate(MappedStatement ms, Object parameter)
-      throws SQLException;
+  protected abstract int doUpdate(MappedStatement ms, Object parameter) throws SQLException;
 
-  protected abstract List<BatchResult> doFlushStatements(boolean isRollback)
-      throws SQLException;
+  protected abstract List<BatchResult> doFlushStatements(boolean isRollback) throws SQLException;
 
   protected abstract <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql)
       throws SQLException;
 
-  protected abstract <E> Cursor<E> doQueryCursor(MappedStatement ms, Object parameter, RowBounds rowBounds, BoundSql boundSql)
-      throws SQLException;
+  protected abstract <E> Cursor<E> doQueryCursor(MappedStatement ms, Object parameter, RowBounds rowBounds, BoundSql boundSql) throws SQLException;
 
   protected void closeStatement(Statement statement) {
     if (statement != null) {
@@ -317,7 +321,8 @@ public abstract class BaseExecutor implements Executor {
     }
   }
 
-  private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
+  private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds,
+                                        ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
     List<E> list;
     localCache.putObject(key, EXECUTION_PLACEHOLDER);
     try {
@@ -345,7 +350,10 @@ public abstract class BaseExecutor implements Executor {
   public void setExecutorWrapper(Executor wrapper) {
     this.wrapper = wrapper;
   }
-  
+
+  /**
+   * 内部类
+   */
   private static class DeferredLoad {
 
     private final MetaObject resultObject;

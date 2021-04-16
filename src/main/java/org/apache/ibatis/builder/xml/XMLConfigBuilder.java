@@ -57,7 +57,7 @@ public class XMLConfigBuilder extends BaseBuilder {
 
   // parse() 后 置位true
   private boolean parsed;
-  // 构造器中初始化  xml解析器  使用xPath解析
+  // 构造器中初始化  xml解析器  里面包含一个xPath解析
   private XPathParser parser;
   //数据库配置 标识
   private String environment;
@@ -95,10 +95,14 @@ public class XMLConfigBuilder extends BaseBuilder {
    * 私有构造器
    */
   private XMLConfigBuilder(XPathParser parser, String environment, Properties props) {
+
     // 创建一个 Configuration   默认会带恨到参数的
     super(new Configuration());
+
     ErrorContext.instance().resource("SQL Mapper Configuration");
+
     this.configuration.setVariables(props);
+
     this.parsed = false;
     this.environment = environment;
     // mybatis xml 解析器
@@ -419,26 +423,32 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void mapperElement(XNode parent) throws Exception {
     if (parent != null) {
       for (XNode child : parent.getChildren()) {
+
         if ("package".equals(child.getName())) {
           String mapperPackage = child.getStringAttribute("name");
+
           // 注册mapper
           configuration.addMappers(mapperPackage);
         } else {
           String resource = child.getStringAttribute("resource");
           String url = child.getStringAttribute("url");
           String mapperClass = child.getStringAttribute("class");
+
           if (resource != null && url == null && mapperClass == null) {
             ErrorContext.instance().resource(resource);
             InputStream inputStream = Resources.getResourceAsStream(resource);
             // 解析 mapper.xml
             Map<String, XNode> sqlFragments = configuration.getSqlFragments();
+            // 创建 mapper解析器
             XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, resource, sqlFragments);
             mapperParser.parse();
+
           } else if (resource == null && url != null && mapperClass == null) {
             ErrorContext.instance().resource(url);
             InputStream inputStream = Resources.getUrlAsStream(url);
             // 解析 mapper.xml
             Map<String, XNode> sqlFragments = configuration.getSqlFragments();
+            // 创建 mapper解析器
             XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, url, sqlFragments);
             mapperParser.parse();
           } else if (resource == null && url == null && mapperClass != null) {

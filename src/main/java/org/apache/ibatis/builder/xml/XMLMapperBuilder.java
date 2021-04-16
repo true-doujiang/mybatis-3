@@ -52,44 +52,72 @@ import org.apache.ibatis.type.TypeHandler;
  */
 public class XMLMapperBuilder extends BaseBuilder {
 
-  private final XPathParser parser;
-  private final MapperBuilderAssistant builderAssistant;
-  private final Map<String, XNode> sqlFragments;
-  private final String resource;
 
-  @Deprecated
-  public XMLMapperBuilder(Reader reader, Configuration configuration, String resource, Map<String, XNode> sqlFragments, String namespace) {
-    this(reader, configuration, resource, sqlFragments);
-    this.builderAssistant.setCurrentNamespace(namespace);
-  }
+  // xml解析器  使用xPath解析
+  private XPathParser parser;
+  // 私有构造器中初始化, 里面保存了configuration的引用,用于添加MappedStatement
+  private MapperBuilderAssistant builderAssistant;
+  // <sql> 标签  key：id
+  private Map<String, XNode> sqlFragments;
+  // com/yhh/example/demo/mapper/UserMapper.xml
+  private String resource;
 
-  @Deprecated
-  public XMLMapperBuilder(Reader reader, Configuration configuration, String resource, Map<String, XNode> sqlFragments) {
-    this(new XPathParser(reader, true, configuration.getVariables(), new XMLMapperEntityResolver()),
-        configuration, resource, sqlFragments);
-  }
 
+
+  // 构造器  反正过时了  有没有用到
+//  @Deprecated
+//  public XMLMapperBuilder(Reader reader, Configuration configuration, String resource, Map<String, XNode> sqlFragments, String namespace) {
+//    this(reader, configuration, resource, sqlFragments);
+//    this.builderAssistant.setCurrentNamespace(namespace);
+//  }
+//
+//  @Deprecated
+//  public XMLMapperBuilder(Reader reader, Configuration configuration, String resource, Map<String, XNode> sqlFragments) {
+//    this(new XPathParser(reader, true, configuration.getVariables(), new XMLMapperEntityResolver()),
+//        configuration, resource, sqlFragments);
+//  }
+
+  /**
+   * default constructor
+   */
   public XMLMapperBuilder(InputStream inputStream, Configuration configuration, String resource, Map<String, XNode> sqlFragments, String namespace) {
     this(inputStream, configuration, resource, sqlFragments);
     this.builderAssistant.setCurrentNamespace(namespace);
   }
 
+  /**
+   * 构造器
+   * @param configuration  XMLConfigBuilder解析 mapper标签时传过来的 configuration
+   */
   public XMLMapperBuilder(InputStream inputStream, Configuration configuration, String resource, Map<String, XNode> sqlFragments) {
     this(new XPathParser(inputStream, true, configuration.getVariables(), new XMLMapperEntityResolver()),
         configuration, resource, sqlFragments);
   }
 
+  /**
+   * 私有构造器  上面调用
+   */
   private XMLMapperBuilder(XPathParser parser, Configuration configuration, String resource, Map<String, XNode> sqlFragments) {
+    // 还是 new XMLConfigBuilder() 时创建的 configuration
     super(configuration);
+    //
     this.builderAssistant = new MapperBuilderAssistant(configuration, resource);
+    // mybatis xml 解析器
     this.parser = parser;
     this.sqlFragments = sqlFragments;
     this.resource = resource;
   }
 
+  /**
+   * 解析mapper.xml
+   */
   public void parse() {
+
     if (!configuration.isResourceLoaded(resource)) {
-      configurationElement(parser.evalNode("/mapper"));
+      // 全局配置文件中的 <mapper>
+      XNode xNodeMapper = parser.evalNode("/mapper");
+      configurationElement(xNodeMapper);
+      // 路径保存到configuration中
       configuration.addLoadedResource(resource);
       bindMapperForNamespace();
     }
@@ -103,19 +131,30 @@ public class XMLMapperBuilder extends BaseBuilder {
     return sqlFragments.get(refid);
   }
 
+  /**
+   * @param context <mapper>标签
+   */
   private void configurationElement(XNode context) {
     try {
       String namespace = context.getStringAttribute("namespace");
       if (namespace == null || namespace.equals("")) {
         throw new BuilderException("Mapper's namespace cannot be empty");
       }
+
+      //
       builderAssistant.setCurrentNamespace(namespace);
+
       cacheRefElement(context.evalNode("cache-ref"));
       cacheElement(context.evalNode("cache"));
+
+      // 不怎么用了
       parameterMapElement(context.evalNodes("/mapper/parameterMap"));
       resultMapElements(context.evalNodes("/mapper/resultMap"));
       sqlElement(context.evalNodes("/mapper/sql"));
+
+      // 解析crud标签
       buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
+
     } catch (Exception e) {
       throw new BuilderException("Error parsing Mapper XML. The XML location is '" + resource + "'. Cause: " + e, e);
     }
@@ -125,6 +164,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     if (configuration.getDatabaseId() != null) {
       buildStatementFromContext(list, configuration.getDatabaseId());
     }
+
     buildStatementFromContext(list, null);
   }
 

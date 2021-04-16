@@ -34,6 +34,10 @@ import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
 @Slf4j
 public class SqlSessionFactoryBuilder {
 
+
+  /**
+   * 用户代码调用，并传入全局配置文件 reader
+   */
   public SqlSessionFactory build(Reader reader) {
     return build(reader, null, null);
   }
@@ -64,7 +68,7 @@ public class SqlSessionFactoryBuilder {
 
 
   /**
-   * 用户代码调用，并传入全局配置文件stream
+   * 用户代码调用，并传入全局配置文件inputStream
    */
   public SqlSessionFactory build(InputStream inputStream) {
     return build(inputStream, null, null);

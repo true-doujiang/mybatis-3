@@ -34,9 +34,14 @@ import org.apache.ibatis.session.SqlSession;
 public class MapperProxy<T> implements InvocationHandler, Serializable {
 
   private static final long serialVersionUID = -6424540398559729838L;
+
+  // session
   private final SqlSession sqlSession;
+  // target xxxMapper接口
   private final Class<T> mapperInterface;
+  // key: 反射方法   value: 具体的方法签名
   private final Map<Method, MapperMethod> methodCache;
+
 
   public MapperProxy(SqlSession sqlSession, Class<T> mapperInterface, Map<Method, MapperMethod> methodCache) {
     this.sqlSession = sqlSession;
@@ -44,6 +49,12 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     this.methodCache = methodCache;
   }
 
+
+  /**
+   *  jdk 事务处理器  所有xxxMapper执行方法都会调用我的invoke()
+   * @param proxy
+   * @param method 被代理类 执行的方法
+   */
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
@@ -71,14 +82,14 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
   @UsesJava7
   private Object invokeDefaultMethod(Object proxy, Method method, Object[] args)
       throws Throwable {
-    final Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class
-        .getDeclaredConstructor(Class.class, int.class);
+    final Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class, int.class);
+
     if (!constructor.isAccessible()) {
       constructor.setAccessible(true);
     }
+
     final Class<?> declaringClass = method.getDeclaringClass();
-    return constructor
-        .newInstance(declaringClass,
+    return constructor.newInstance(declaringClass,
             MethodHandles.Lookup.PRIVATE | MethodHandles.Lookup.PROTECTED
                 | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC)
         .unreflectSpecial(method, declaringClass).bindTo(proxy).invokeWithArguments(args);

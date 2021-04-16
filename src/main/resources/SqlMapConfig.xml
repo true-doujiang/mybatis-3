@@ -127,6 +127,7 @@
     <mappers>
         <!-- 1、通过resource方法一次加载一个映射文件 -->
         <mapper resource="com/yhh/example/demo/mapper/UserMapper.xml"/>
+<!--        <mapper resource="com/yhh/example/demo/mapper/UserMapper.xml" url="" class=""  />-->
 
         <!-- 2、通过mapper接口  加载单个映射文件
               遵循一些规范：

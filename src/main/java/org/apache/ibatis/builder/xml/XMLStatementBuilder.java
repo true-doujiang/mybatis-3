@@ -39,6 +39,7 @@ import org.apache.ibatis.session.Configuration;
 public class XMLStatementBuilder extends BaseBuilder {
 
   private final MapperBuilderAssistant builderAssistant;
+  // <insert>  <update>  <select>  <delete> 之一
   private final XNode context;
   private final String requiredDatabaseId;
 
@@ -46,6 +47,10 @@ public class XMLStatementBuilder extends BaseBuilder {
     this(configuration, builderAssistant, context, null);
   }
 
+
+  /**
+   * 构造器
+   */
   public XMLStatementBuilder(Configuration configuration, MapperBuilderAssistant builderAssistant, XNode context, String databaseId) {
     super(configuration);
     this.builderAssistant = builderAssistant;
@@ -53,6 +58,11 @@ public class XMLStatementBuilder extends BaseBuilder {
     this.requiredDatabaseId = databaseId;
   }
 
+
+  /**
+   * 1.解析 <insert>  <update>  <select>  <delete> 标签
+   * 2.创建对应的MappedStatement 并添加到Configuration
+   */
   public void parseStatementNode() {
     String id = context.getStringAttribute("id");
     String databaseId = context.getStringAttribute("databaseId");
@@ -106,6 +116,7 @@ public class XMLStatementBuilder extends BaseBuilder {
           ? Jdbc3KeyGenerator.INSTANCE : NoKeyGenerator.INSTANCE;
     }
 
+    //
     builderAssistant.addMappedStatement(id, sqlSource, statementType, sqlCommandType,
         fetchSize, timeout, parameterMap, parameterTypeClass, resultMap, resultTypeClass,
         resultSetTypeEnum, flushCache, useCache, resultOrdered, 
@@ -131,6 +142,9 @@ public class XMLStatementBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   *
+   */
   private void parseSelectKeyNode(String id, XNode nodeToHandle, Class<?> parameterTypeClass, LanguageDriver langDriver, String databaseId) {
     String resultType = nodeToHandle.getStringAttribute("resultType");
     Class<?> resultTypeClass = resolveClass(resultType);
@@ -153,6 +167,7 @@ public class XMLStatementBuilder extends BaseBuilder {
     SqlSource sqlSource = langDriver.createSqlSource(configuration, nodeToHandle, parameterTypeClass);
     SqlCommandType sqlCommandType = SqlCommandType.SELECT;
 
+    //
     builderAssistant.addMappedStatement(id, sqlSource, statementType, sqlCommandType,
         fetchSize, timeout, parameterMap, parameterTypeClass, resultMap, resultTypeClass,
         resultSetTypeEnum, flushCache, useCache, resultOrdered,

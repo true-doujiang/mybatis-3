@@ -29,6 +29,10 @@ public abstract class TypeReference<T> {
 
   private final Type rawType;
 
+
+  /**
+   * default constructor
+   */
   protected TypeReference() {
     rawType = getSuperclassTypeParameter(getClass());
   }
