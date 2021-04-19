@@ -133,7 +133,7 @@
               遵循一些规范：
               ①需要将mapper接口类名和mapper.xml映射文件名称保持一致，且在一个目录
               ②使用的是mapper代理方法（这个肯定是啊） -->
-<!--        <mapper class="com.yhh.example.demo.mapper.UserMapper"/>-->
+        <mapper class="com.yhh.example.demo.mapper.UserMapper"/>
 
         <!-- url也可以       -->
         <!-- <mapper url="" />-->

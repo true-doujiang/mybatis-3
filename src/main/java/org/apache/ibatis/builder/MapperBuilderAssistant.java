@@ -54,16 +54,30 @@ import org.apache.ibatis.type.TypeHandler;
  */
 public class MapperBuilderAssistant extends BaseBuilder {
 
+  // 父类保存 configuration
+
+  // com.yhh.example.demo.mapper.UserMapper
   private String currentNamespace;
+  // com/yhh/example/demo/mapper/UserMapper.xml
   private final String resource;
   private Cache currentCache;
   private boolean unresolvedCacheRef; // issue #676
 
+
+  /**
+   *  default constructor
+   *
+   *  调用 org.apache.ibatis.builder.xml.XMLMapperBuilder#XMLMapperBuilder()
+   */
   public MapperBuilderAssistant(Configuration configuration, String resource) {
+    //
     super(configuration);
+
     ErrorContext.instance().resource(resource);
     this.resource = resource;
   }
+
+
 
   public String getCurrentNamespace() {
     return currentNamespace;
@@ -75,8 +89,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     }
 
     if (this.currentNamespace != null && !this.currentNamespace.equals(currentNamespace)) {
-      throw new BuilderException("Wrong namespace. Expected '"
-          + this.currentNamespace + "' but found '" + currentNamespace + "'.");
+      throw new BuilderException("Wrong namespace. Expected '" + this.currentNamespace + "' but found '" + currentNamespace + "'.");
     }
 
     this.currentNamespace = currentNamespace;
@@ -246,6 +259,9 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return new Discriminator.Builder(configuration, resultMapping, namespaceDiscriminatorMap).build();
   }
 
+  /**
+   *
+   */
   public MappedStatement addMappedStatement(
       String id,
       SqlSource sqlSource,

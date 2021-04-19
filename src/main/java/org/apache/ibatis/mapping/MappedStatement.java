@@ -61,6 +61,9 @@ public final class MappedStatement {
     // constructor disabled
   }
 
+  /**
+   * 内部类
+   */
   public static class Builder {
     private MappedStatement mappedStatement = new MappedStatement();
 
@@ -72,7 +75,10 @@ public final class MappedStatement {
       mappedStatement.parameterMap = new ParameterMap.Builder(configuration, "defaultParameterMap", null, new ArrayList<ParameterMapping>()).build();
       mappedStatement.resultMaps = new ArrayList<ResultMap>();
       mappedStatement.sqlCommandType = sqlCommandType;
-      mappedStatement.keyGenerator = configuration.isUseGeneratedKeys() && SqlCommandType.INSERT.equals(sqlCommandType) ? Jdbc3KeyGenerator.INSTANCE : NoKeyGenerator.INSTANCE;
+
+      mappedStatement.keyGenerator = configuration.isUseGeneratedKeys() && SqlCommandType.INSERT.equals(sqlCommandType)
+              ? Jdbc3KeyGenerator.INSTANCE : NoKeyGenerator.INSTANCE;
+
       String logId = id;
       if (configuration.getLogPrefix() != null) {
         logId = configuration.getLogPrefix() + id;
@@ -189,6 +195,8 @@ public final class MappedStatement {
       return mappedStatement;
     }
   }
+  // Builder 内部类end --------
+
 
   public KeyGenerator getKeyGenerator() {
     return keyGenerator;
@@ -287,7 +295,11 @@ public final class MappedStatement {
   public String[] getResulSets() {
     return resultSets;
   }
-  
+
+
+  /**
+   *
+   */
   public BoundSql getBoundSql(Object parameterObject) {
     BoundSql boundSql = sqlSource.getBoundSql(parameterObject);
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();

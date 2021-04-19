@@ -17,6 +17,8 @@ package org.apache.ibatis.binding;
 
 import org.apache.ibatis.builder.annotation.MapperAnnotationBuilder;
 import org.apache.ibatis.io.ResolverUtil;
+import org.apache.ibatis.logging.Log;
+import org.apache.ibatis.logging.LogFactory;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
 
@@ -33,11 +35,16 @@ import java.util.Set;
  */
 public class MapperRegistry {
 
+  private static final Log log = LogFactory.getLog(MapperRegistry.class);
+
+
   private final Configuration config;
   private final Map<Class<?>, MapperProxyFactory<?>> knownMappers = new HashMap<Class<?>, MapperProxyFactory<?>>();
 
   /**
    * 构造器
+   *
+   * Configuration 的实例属性创建
    */
   public MapperRegistry(Configuration config) {
     this.config = config;
@@ -46,6 +53,8 @@ public class MapperRegistry {
 
   /**
    * 动态代理生产Mapper实现类
+   * @param type  用户代码接口
+   * @param sqlSession
    */
   @SuppressWarnings("unchecked")
   public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
@@ -66,14 +75,27 @@ public class MapperRegistry {
     return knownMappers.containsKey(type);
   }
 
+
+  /**
+   * 添加一个 Mapper 到 mapper注册器
+   * @param type xxxMapper.class
+   */
   public <T> void addMapper(Class<T> type) {
+    // 判断是否为接口
     if (type.isInterface()) {
+
       if (hasMapper(type)) {
         throw new BindingException("Type " + type + " is already known to the MapperRegistry.");
       }
+
       boolean loadCompleted = false;
       try {
+        // 存入map
         knownMappers.put(type, new MapperProxyFactory<T>(type));
+
+        log.debug("mapper 注册器 addMapper: " + type);
+
+
         // It's important that the type is added before the parser is run
         // otherwise the binding may automatically be attempted by the
         // mapper parser. If the type is already known, it won't try.

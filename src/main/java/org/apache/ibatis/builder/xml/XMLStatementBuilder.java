@@ -38,14 +38,15 @@ import org.apache.ibatis.session.Configuration;
  */
 public class XMLStatementBuilder extends BaseBuilder {
 
+  // XMLMapperBuilder私有构造器中初始化 一直传到这里
   private final MapperBuilderAssistant builderAssistant;
   // <insert>  <update>  <select>  <delete> 之一
   private final XNode context;
   private final String requiredDatabaseId;
 
-  public XMLStatementBuilder(Configuration configuration, MapperBuilderAssistant builderAssistant, XNode context) {
-    this(configuration, builderAssistant, context, null);
-  }
+//  public XMLStatementBuilder(Configuration configuration, MapperBuilderAssistant builderAssistant, XNode context) {
+//    this(configuration, builderAssistant, context, null);
+//  }
 
 
   /**
@@ -62,6 +63,8 @@ public class XMLStatementBuilder extends BaseBuilder {
   /**
    * 1.解析 <insert>  <update>  <select>  <delete> 标签
    * 2.创建对应的MappedStatement 并添加到Configuration
+   *
+   * 调用 org.apache.ibatis.builder.xml.XMLMapperBuilder#buildStatementFromContext()
    */
   public void parseStatementNode() {
     String id = context.getStringAttribute("id");
@@ -99,15 +102,19 @@ public class XMLStatementBuilder extends BaseBuilder {
 
     // Parse selectKey after includes and remove them.
     processSelectKeyNodes(id, parameterTypeClass, langDriver);
-    
+
+    // DynamicSqlSource
     // Parse the SQL (pre: <selectKey> and <include> were parsed and removed)
     SqlSource sqlSource = langDriver.createSqlSource(configuration, context, parameterTypeClass);
+
     String resultSets = context.getStringAttribute("resultSets");
     String keyProperty = context.getStringAttribute("keyProperty");
     String keyColumn = context.getStringAttribute("keyColumn");
     KeyGenerator keyGenerator;
     String keyStatementId = id + SelectKeyGenerator.SELECT_KEY_SUFFIX;
+
     keyStatementId = builderAssistant.applyCurrentNamespace(keyStatementId, true);
+
     if (configuration.hasKeyGenerator(keyStatementId)) {
       keyGenerator = configuration.getKeyGenerator(keyStatementId);
     } else {
@@ -122,6 +129,8 @@ public class XMLStatementBuilder extends BaseBuilder {
         resultSetTypeEnum, flushCache, useCache, resultOrdered, 
         keyGenerator, keyProperty, keyColumn, databaseId, langDriver, resultSets);
   }
+
+
 
   private void processSelectKeyNodes(String id, Class<?> parameterTypeClass, LanguageDriver langDriver) {
     List<XNode> selectKeyNodes = context.evalNodes("selectKey");
@@ -143,7 +152,7 @@ public class XMLStatementBuilder extends BaseBuilder {
   }
 
   /**
-   *
+   * 解析statement内部的statement 主键，子查询
    */
   private void parseSelectKeyNode(String id, XNode nodeToHandle, Class<?> parameterTypeClass, LanguageDriver langDriver, String databaseId) {
     String resultType = nodeToHandle.getStringAttribute("resultType");

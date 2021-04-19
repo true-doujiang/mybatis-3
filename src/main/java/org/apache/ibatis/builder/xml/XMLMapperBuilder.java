@@ -119,6 +119,7 @@ public class XMLMapperBuilder extends BaseBuilder {
       configurationElement(xNodeMapper);
       // 路径保存到configuration中
       configuration.addLoadedResource(resource);
+      // configuration.addMapper(boundType);
       bindMapperForNamespace();
     }
 
@@ -152,14 +153,19 @@ public class XMLMapperBuilder extends BaseBuilder {
       resultMapElements(context.evalNodes("/mapper/resultMap"));
       sqlElement(context.evalNodes("/mapper/sql"));
 
-      // 解析crud标签
-      buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
+      // 解析crud标签 调用下面2个方法
+      List<XNode> xNodeList = context.evalNodes("select|insert|update|delete");
+      buildStatementFromContext(xNodeList);
 
     } catch (Exception e) {
       throw new BuilderException("Error parsing Mapper XML. The XML location is '" + resource + "'. Cause: " + e, e);
     }
   }
 
+  /**
+   * 解析 select|insert|update|delete -> statement
+   * 并利用 MapperBuilderAssistant 把statement添加到MapperBuilderAssistant中的configuration中的mappedStatements中
+   */
   private void buildStatementFromContext(List<XNode> list) {
     if (configuration.getDatabaseId() != null) {
       buildStatementFromContext(list, configuration.getDatabaseId());
@@ -168,10 +174,15 @@ public class XMLMapperBuilder extends BaseBuilder {
     buildStatementFromContext(list, null);
   }
 
+  /**
+   *
+   */
   private void buildStatementFromContext(List<XNode> list, String requiredDatabaseId) {
     for (XNode context : list) {
+      // 每个select|insert|update|delete 创建一个 statmentBuilder
       final XMLStatementBuilder statementParser = new XMLStatementBuilder(configuration, builderAssistant, context, requiredDatabaseId);
       try {
+        //
         statementParser.parseStatementNode();
       } catch (IncompleteElementException e) {
         configuration.addIncompleteStatement(statementParser);
@@ -435,6 +446,9 @@ public class XMLMapperBuilder extends BaseBuilder {
     return null;
   }
 
+  /**
+   *
+   */
   private void bindMapperForNamespace() {
     String namespace = builderAssistant.getCurrentNamespace();
     if (namespace != null) {
